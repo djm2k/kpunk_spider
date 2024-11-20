@@ -15,47 +15,58 @@ from scrapy.linkextractors import LinkExtractor
 
 class KPunk(scrapy.Spider):
     name = "KPunk"
-    allowed_domains = ["k-punk."]
-    start_urls = ["http://k-punk.org/2003/09/"]
+    allowed_domains = ["k-punk.org"]
+    start_urls = ["http://k-punk.org/"]
 
+    # parse will scape the archive section to collect a list of archive months
     def parse(self, response):
         # Logic to extract blog post URLs
         archive_link_extractor = LinkExtractor(
-            restrict_xpaths='//*[@id="archives-3"]//ul/li'
+            # Got this via Inspect Element > Copy > XPath on the 'Archive' list element
+            restrict_xpaths='/html/body/div/div[2]/div/div[2]/div[2]/div/div/ul[5]/li/ul'
         )
         links = archive_link_extractor.extract_links(response)
         for link in links:
-            yield response.follow(link.url, callback=self.parse_posts)
+            print(link)
+            yield response.follow(link.url, callback=self.parse_month)
 
-    def parse_posts(self, response):
-        posts = response.xpath("//article")
 
-        for post in posts:
-            title_parts = post.css(".entry-title *::text").getall()
-            title = " ".join([part.strip() for part in title_parts]).replace(
-                "\xa0", " "
-            )
-            raw_html = post.css(".entry-content").get()
-            soup = BeautifulSoup(raw_html, "html.parser")
-            links = []
-            text = soup.get_text()
-            for p in soup.find_all("p"):
-                for element in p.children:
-                    if element.name == "a":
-                        link_text = element.get_text()
-                        link_url = element.get("href")
-                        links.append({"url": link_url, "text": link_text})
-                    else:
-                        pass
+    # parse_month will scape the list of posts and collects their links
+    def parse_month(self, response):
 
-            item = kppost(
-                post_id=post.xpath("@id").get(),
-                categories=post.css(".entry-categories a::text").getall(),
-                tags=post.css(".entry-tags a::text").getall(),
-                title=title,
-                published_date=post.css(".entry-date a::text").get(),
-                author=post.css(".author.vcard a::text").getall(),
-                text=text,
-                links=links,
-            )
-            yield item
+        # yield link from archive
+        yield None
+
+    # parse_post will read each post and scrapes it's content.
+    # def parse_posts(self, response):
+    #     posts = response.xpath("//article")
+
+    #     for post in posts:
+    #         title_parts = post.css(".entry-title *::text").getall()
+    #         title = " ".join([part.strip() for part in title_parts]).replace(
+    #             "\xa0", " "
+    #         )
+    #         raw_html = post.css(".entry-content").get()
+    #         soup = BeautifulSoup(raw_html, "html.parser")
+    #         links = []
+    #         text = soup.get_text()
+    #         for p in soup.find_all("p"):
+    #             for element in p.children:
+    #                 if element.name == "a":
+    #                     link_text = element.get_text()
+    #                     link_url = element.get("href")
+    #                     links.append({"url": link_url, "text": link_text})
+    #                 else:
+    #                     pass
+
+    #         item = kppost(
+    #             post_id=post.xpath("@id").get(),
+    #             categories=post.css(".entry-categories a::text").getall(),
+    #             tags=post.css(".entry-tags a::text").getall(),
+    #             title=title,
+    #             published_date=post.css(".entry-date a::text").get(),
+    #             author=post.css(".author.vcard a::text").getall(),
+    #             text=text,
+    #             links=links,
+    #         )
+    #         yield item

@@ -2,10 +2,23 @@
 
 Scraping Mark Fisher's blog for tagging and graphing via Logseq.
 
+## Environment
+
+*I use Powershell on Windows, with Python3 installed*.
+
+1. `python3 -m venv venv`
+2. `.\venv\Scripts\Activate.ps1`
+3. `python .\Kpunkspi\run_spi.py`
+
 ## Working log
 
 1. Tidied up the repo
-2. test
+2. Read through the scapy docs on [Spiders](https://docs.scrapy.org/en/latest/topics/spiders.html).
+3. Decided on the parsing model:
+    - `parse` will scape the archive section to collect a list of archive months
+    - `parse_month` will scape the list of posts and collects their links
+    - `parse_post` will read each post and scrapes it's content.
+4. Implemented the above in `kpunk.py`.
 
 ## [Original Repo](https://github.com/Connor-Scott/WordPress_blog_scraper) readme
 
