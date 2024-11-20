@@ -20,25 +20,29 @@ class KPunk(scrapy.Spider):
 
     # parse will scape the archive section to collect a list of archive months
     def parse(self, response):
-        # Logic to extract blog post URLs
-        archive_link_extractor = LinkExtractor(
+        extractor = LinkExtractor(
             # Got this via Inspect Element > Copy > XPath on the 'Archive' list element
             restrict_xpaths='/html/body/div/div[2]/div/div[2]/div[2]/div/div/ul[5]/li/ul'
-        )
-        links = archive_link_extractor.extract_links(response)
-        for link in links:
-            print(link)
+        ).extract_links(response)
+
+        for link in extractor:
             yield response.follow(link.url, callback=self.parse_month)
 
 
     # parse_month will scape the list of posts and collects their links
     def parse_month(self, response):
-
-        # yield link from archive
-        yield None
+        # the 'Posts' list element
+        extractor = LinkExtractor(
+            restrict_xpaths='/html/body/div/div[2]/div/div[2]/div[1]/div'
+        ).extract_links(response)
+        
+        for link in extractor:
+            yield response.follow(link.url, callback=self.parse_post)
 
     # parse_post will read each post and scrapes it's content.
-    # def parse_posts(self, response):
+    def parse_post(self, response):
+        yield None
+
     #     posts = response.xpath("//article")
 
     #     for post in posts:
